@@ -12,7 +12,7 @@ Example:
 
 When opening VSCode again, you will see a warning about a corrupted installation. If you don't ignore it, the changes made by the patch will be reverted.
 
-To revert the patch, simply reinstall VS Code.
+To revert the patch, simply run VS Code installer again.
 
 ## Build
 
