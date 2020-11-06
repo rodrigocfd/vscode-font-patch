@@ -6,9 +6,9 @@ import (
 
 func printUsage() {
 	fmt.Println(`
-VSCode Font Aliasing
+VSCode Font Patch
 
-vscode-font-aliasing is a tool to slightly enhance font aliasing on VSCode.
+vscode-font-patch is a tool to slightly enhance font rendering on VSCode.
 Usually, this is necessary on Windows. It works by patching some internal
 installation files.
 
@@ -18,10 +18,10 @@ by the patch will be reverted.
 
 Usage:
 
-        vscode-font-aliasing <go-install-folder>
+        vscode-font-patch <go-install-folder>
 
 Example:
 
-        vscode-font-aliasing "C:\My stuff\Microsoft VS Code"
+        vscode-font-patch "C:\My stuff\Microsoft VS Code"
 		`)
 }

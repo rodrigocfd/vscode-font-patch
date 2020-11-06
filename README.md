@@ -1,6 +1,6 @@
-# VSCode Font Aliasing
+# VSCode Font Patch
 
-A command line utility to patch a Visual Studio Code installation on **Windows**, slightly enhancing the font aliasing.
+A command line utility to patch a Visual Studio Code installation on **Windows**, slightly enhancing the font rendering.
 
 ## Comparison
 
@@ -18,7 +18,7 @@ Close VSCode and run the command line, passing the VSCode installation path as t
 
 Example:
 
-    vscode-font-aliasing "C:\My stuff\Microsoft VS Code"
+    vscode-font-patch "C:\My stuff\Microsoft VS Code"
 
 When opening VSCode again, you will see a warning about a corrupted installation. If you don't ignore it, the changes made by the patch will be reverted.
 
