@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -18,15 +19,20 @@ func main() {
 	} else {
 		fmt.Fprintln(os.Stdout, "Patching...")
 
-		cssTargetFile := retrieveCSSTargetFile()
-		origContents, err := readCSSContents(cssTargetFile)
+		cssTargetFile := retrieveCssTargetFile()
+		origContents, err := readCssContents(cssTargetFile)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			return
 		}
 
-		patchedContents := applyPatch(origContents)
-		err = writeCSSContents(cssTargetFile, patchedContents)
+		patchedContents, err := applyPatch(origContents)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			return
+		}
+
+		err = writeCssContents(cssTargetFile, patchedContents)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			return
@@ -36,7 +42,7 @@ func main() {
 	}
 }
 
-func retrieveCSSTargetFile() string {
+func retrieveCssTargetFile() string {
 	cssTarget := os.Args[1]
 	if !strings.HasSuffix(cssTarget, "\\") {
 		cssTarget += "\\"
@@ -44,7 +50,7 @@ func retrieveCSSTargetFile() string {
 	return cssTarget + "resources\\app\\out\\vs\\workbench\\workbench.desktop.main.css"
 }
 
-func readCSSContents(cssTargetFile string) (string, error) {
+func readCssContents(cssTargetFile string) (string, error) {
 	fin, err := os.OpenFile(cssTargetFile, os.O_RDONLY, 0)
 	if err != nil {
 		return "", err
@@ -60,23 +66,26 @@ func readCSSContents(cssTargetFile string) (string, error) {
 	return string(byteContents), nil
 }
 
-func applyPatch(contents string) string {
+func applyPatch(contents string) (string, error) {
 	endOfComments := "-*/"
 	idxStartCode := strings.Index(contents, endOfComments) +
 		len(endOfComments)
 
+	const magicPatch = "*{text-shadow:transparent 0px 0px 0px, rgba(0, 0, 0, 0.5) 0px 0px 0px !important;}"
+
+	if magicPatch == contents[idxStartCode:idxStartCode+len(magicPatch)] {
+		return "", errors.New("Aborted: this instalation is already patched.")
+	}
+
 	patched := strings.Builder{}
 	patched.WriteString(contents[:idxStartCode])
-
-	patched.WriteString( // magic patch
-		"*{text-shadow:transparent 0px 0px 0px, rgba(0, 0, 0, 0.5) 0px 0px 0px !important;}",
-	)
-
+	patched.WriteString(magicPatch)
 	patched.WriteString(contents[idxStartCode:])
-	return patched.String()
+
+	return patched.String(), nil
 }
 
-func writeCSSContents(cssTargetFile, contents string) error {
+func writeCssContents(cssTargetFile, contents string) error {
 	fout, err := os.OpenFile(cssTargetFile, os.O_RDWR|os.O_TRUNC, os.ModeExclusive)
 	if err != nil {
 		return err
