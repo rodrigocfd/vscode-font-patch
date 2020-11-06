@@ -10,6 +10,12 @@ import (
 
 func retrieveCssTargetFile() string {
 	cssTarget := os.Args[1]
+	if strings.HasPrefix(cssTarget, "\"") {
+		cssTarget = cssTarget[1:]
+	}
+	if strings.HasSuffix(cssTarget, "\"") {
+		cssTarget = cssTarget[:len(cssTarget)-1]
+	}
 	if !strings.HasSuffix(cssTarget, "\\") {
 		cssTarget += "\\"
 	}
