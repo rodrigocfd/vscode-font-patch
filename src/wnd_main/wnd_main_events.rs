@@ -61,7 +61,14 @@ impl WndMain {
 					self2.btn_choose.hwnd().SetFocus();
 
 				} else {
-					patch::patch_installation(&target);
+					match patch::patch_installation(&target) {
+						Err(e) => {
+							self2.wnd.hwnd()
+								.MessageBox(&e.to_string(), "Patching error", co::MB::ICONERROR)
+								.unwrap();
+						},
+						Ok(_) => {},
+					}
 				}
 			}
 		});
