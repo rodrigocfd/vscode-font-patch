@@ -4,6 +4,7 @@ use winsafe::msg;
 use winsafe::shell;
 
 use super::WndMain;
+use super::patch;
 
 impl WndMain {
 	pub(super) fn events(&self) {
@@ -50,8 +51,18 @@ impl WndMain {
 		self.btn_patch.on().bn_clicked({
 			let self2 = self.clone();
 			move || {
+				let target = self2.txt_path.text().unwrap();
 
+				if target.is_empty() {
+					self2.wnd.hwnd().MessageBox(
+						"No installation path given.",
+						"No path",
+						co::MB::ICONERROR).unwrap();
+					self2.btn_choose.hwnd().SetFocus();
 
+				} else {
+					patch::patch_installation(&target);
+				}
 			}
 		});
 	}

@@ -1,5 +1,6 @@
 use winsafe::gui;
 
+mod patch;
 mod wnd_main_events;
 mod wnd_main_funcs;
 
