@@ -6,10 +6,8 @@ use winsafe::co;
 pub fn patch_installation(install_dir: &str) -> Result<(), Box<dyn Error>> {
 	let css_path = build_css_path(install_dir);
 	let orig_contents = read_css_contents(&css_path)?;
-
-	println!("{}", orig_contents);
-
-	Ok(())
+	let new_contents = apply_patch(&orig_contents)?;
+	write_css_contents(&css_path, &new_contents)
 }
 
 fn build_css_path(install_dir: &str) -> String {
@@ -26,12 +24,7 @@ fn build_css_path(install_dir: &str) -> String {
 }
 
 fn read_css_contents(css_path: &str) -> Result<String, Box<dyn Error>> {
-	let file_exists = w::GetFileAttributes(css_path).is_ok();
-	if !file_exists {
-		return Err(format!("File does not exist: {}", css_path).into());
-	}
-
-	let hfile = w::HFILE::CreateFile(css_path, co::GENERIC::READ,
+	let (hfile, _) = w::HFILE::CreateFile(css_path, co::GENERIC::READ,
 		co::FILE_SHARE::READ, None, co::DISPOSITION::OPEN_EXISTING,
 		co::FILE_ATTRIBUTE::NORMAL, None)?;
 
@@ -41,4 +34,37 @@ fn read_css_contents(css_path: &str) -> Result<String, Box<dyn Error>> {
 
 	hfile.CloseHandle()?;
 	Ok(contents)
+}
+
+fn apply_patch(orig_contents: &str) -> Result<String, Box<dyn Error>> {
+	const END_OF_COMMS: &str = "-*/";
+	const MAGIC_PATCH: &str = "*{text-shadow:transparent 0px 0px 0px, rgba(0, 0, 0, 0.5) 0px 0px 0px !important;}";
+
+	let mut idx_start_code = match orig_contents.find(END_OF_COMMS) {
+		Some(idx) => idx,
+		None => return Err("End of comments not found.".into()),
+	};
+
+	idx_start_code += END_OF_COMMS.len();
+
+	if MAGIC_PATCH == &orig_contents[idx_start_code..(idx_start_code + MAGIC_PATCH.len())] {
+		return Err("Installation already patched, nothing to do.".into());
+	}
+
+	let mut new_contents = String::with_capacity(orig_contents.len() + MAGIC_PATCH.len());
+	new_contents.push_str(&orig_contents[..idx_start_code]);
+	new_contents.push_str(MAGIC_PATCH);
+	new_contents.push_str(&orig_contents[idx_start_code..]);
+
+	Ok(new_contents)
+}
+
+fn write_css_contents(css_path: &str, new_contents: &str) -> Result<(), Box<dyn Error>> {
+	let (hfile, _) = w::HFILE::CreateFile(css_path, co::GENERIC::READ | co::GENERIC::WRITE,
+		co::FILE_SHARE::NONE, None, co::DISPOSITION::TRUNCATE_EXISTING,
+		co::FILE_ATTRIBUTE::NORMAL, None)?;
+
+	hfile.WriteFile(new_contents.as_bytes(), None)?;
+	hfile.CloseHandle()?;
+	Ok(())
 }

@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use winsafe as w;
 use winsafe::co;
 use winsafe::msg;
@@ -56,19 +58,22 @@ impl WndMain {
 				if target.is_empty() {
 					self2.wnd.hwnd().MessageBox(
 						"No installation path given.",
-						"No path",
-						co::MB::ICONERROR).unwrap();
+						"No path", co::MB::ICONERROR).unwrap();
 					self2.btn_choose.hwnd().SetFocus();
 
 				} else {
+					let start = Instant::now();
+
 					match patch::patch_installation(&target) {
-						Err(e) => {
-							self2.wnd.hwnd()
-								.MessageBox(&e.to_string(), "Patching error", co::MB::ICONERROR)
-								.unwrap();
-						},
-						Ok(_) => {},
-					}
+						Err(e) => self2.wnd.hwnd()
+							.MessageBox(
+								&e.to_string(), "Patching error", co::MB::ICONERROR).unwrap(),
+						Ok(_) => self2.wnd.hwnd()
+							.MessageBox(
+								&format!("Installation successfully patched in {}μs.",
+									start.elapsed().as_micros()),
+								"Done", co::MB::ICONINFORMATION).unwrap(),
+					};
 				}
 			}
 		});
