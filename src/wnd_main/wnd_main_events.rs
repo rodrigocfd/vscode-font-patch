@@ -46,7 +46,9 @@ impl WndMain {
 					).unwrap();
 
 					self2.btn_patch.hwnd().EnableWindow(true);
-					self2.btn_patch.hwnd().SetFocus();
+					self2.wnd.hwnd().SendMessage(msg::wm::NextDlgCtl {
+						hwnd_focus: w::HwndFocus::Hwnd(self2.btn_patch.hwnd()),
+					});
 				}
 			}
 		});
