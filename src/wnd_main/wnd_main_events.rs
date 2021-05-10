@@ -45,6 +45,7 @@ impl WndMain {
 							.GetDisplayName(co::SIGDN::FILESYSPATH).unwrap(),
 					).unwrap();
 
+					self2.btn_patch.hwnd().EnableWindow(true);
 					self2.btn_patch.hwnd().SetFocus();
 				}
 			}
