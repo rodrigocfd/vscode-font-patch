@@ -3,6 +3,27 @@ use std::error::Error;
 use winsafe as w;
 use winsafe::co;
 
+pub fn is_vscode_running() -> Result<bool, Box<dyn Error>> {
+	let hpl = w::HPROCESSLIST::CreateToolhelp32Snapshot(co::TH32CS::SNAPPROCESS, None)?;
+	let mut pe = w::PROCESSENTRY32::default();
+	let mut found = false;
+
+	if hpl.Process32First(&mut pe)? {
+		loop {
+			if pe.szExeFile() == "Code.exe" {
+				found = true;
+				break;
+			}
+			if !hpl.Process32Next(&mut pe)? {
+				break;
+			}
+		}
+	}
+
+	hpl.CloseHandle()?;
+	Ok(found)
+}
+
 pub fn patch_installation(install_dir: &str) -> Result<(), Box<dyn Error>> {
 	let css_path = build_css_path(install_dir);
 	let orig_contents = read_css_contents(&css_path)?;

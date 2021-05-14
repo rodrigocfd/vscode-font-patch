@@ -12,9 +12,9 @@ impl WndMain {
 		let btn_choose = gui::Button::new_dlg(&wnd, ids::BTN_CHOOSE);
 		let btn_patch  = gui::Button::new_dlg(&wnd, ids::BTN_PATCH);
 
-		let new_self = Self { wnd, lbl_path, txt_path, btn_choose, btn_patch };
-		new_self.events();
-		new_self
+		let selfc = Self { wnd, lbl_path, txt_path, btn_choose, btn_patch };
+		selfc.events();
+		selfc
 	}
 
 	pub fn run(&self) -> w::WinResult<()> {

@@ -11,22 +11,22 @@ use super::patch;
 impl WndMain {
 	pub(super) fn events(&self) {
 		self.wnd.on().wm_init_dialog({
-			let self2 = self.clone();
+			let selfc = self.clone();
 			move |_| {
-				self2.lbl_path.resize_to_text().unwrap();
+				selfc.lbl_path.resize_to_text().unwrap();
 				true
 			}
 		});
 
 		self.wnd.on().wm_command_accel_menu(co::DLGID::CANCEL.into(), {
-			let self2 = self.clone();
+			let selfc = self.clone();
 			move || {
-				self2.wnd.hwnd().SendMessage(msg::wm::Close {});
+				selfc.wnd.hwnd().SendMessage(msg::wm::Close {});
 			}
 		});
 
 		self.btn_choose.on().bn_clicked({
-			let self2 = self.clone();
+			let selfc = self.clone();
 			move || {
 				let fileo: shell::IFileOpenDialog = w::CoCreateInstance(
 					&shell::clsid::FileOpenDialog,
@@ -39,45 +39,59 @@ impl WndMain {
 						| co::FOS::FILEMUSTEXIST | co::FOS::PICKFOLDERS,
 				).unwrap();
 
-				if fileo.Show(self2.wnd.hwnd()).unwrap() {
-					self2.txt_path.set_text(
+				if fileo.Show(selfc.wnd.hwnd()).unwrap() {
+					selfc.txt_path.set_text(
 						&fileo.GetResult().unwrap()
 							.GetDisplayName(co::SIGDN::FILESYSPATH).unwrap(),
 					).unwrap();
 
-					self2.btn_patch.hwnd().EnableWindow(true);
-					self2.wnd.hwnd().SendMessage(msg::wm::NextDlgCtl {
-						hwnd_focus: w::HwndFocus::Hwnd(self2.btn_patch.hwnd()),
+					selfc.btn_patch.hwnd().EnableWindow(true);
+					selfc.wnd.hwnd().SendMessage(msg::wm::NextDlgCtl {
+						hwnd_focus: w::HwndFocus::Hwnd(selfc.btn_patch.hwnd()),
 					});
 				}
 			}
 		});
 
 		self.btn_patch.on().bn_clicked({
-			let self2 = self.clone();
+			let selfc = self.clone();
 			move || {
-				let target = self2.txt_path.text().unwrap();
+				let target = selfc.txt_path.text().unwrap();
 
 				if target.is_empty() {
-					self2.wnd.hwnd().MessageBox(
+					selfc.wnd.hwnd().MessageBox(
 						"No installation path given.",
 						"No path", co::MB::ICONERROR).unwrap();
-					self2.btn_choose.hwnd().SetFocus();
-
-				} else {
-					let start = Instant::now();
-
-					match patch::patch_installation(&target) {
-						Err(e) => self2.wnd.hwnd()
-							.MessageBox(
-								&e.to_string(), "Patching error", co::MB::ICONERROR).unwrap(),
-						Ok(_) => self2.wnd.hwnd()
-							.MessageBox(
-								&format!("Installation successfully patched in {}μs.",
-									start.elapsed().as_micros()),
-								"Done", co::MB::ICONINFORMATION).unwrap(),
-					};
+					selfc.btn_choose.hwnd().SetFocus();
+					return;
 				}
+
+				if patch::is_vscode_running().unwrap() {
+					let res = selfc.wnd.hwnd().MessageBox(
+						"VS Code appears to be running.\n\
+						It's recommended to close it before patching.\n\n\
+						Proceed anyway?",
+						"VS Code running",
+						co::MB::ICONEXCLAMATION | co::MB::YESNO,
+					).unwrap();
+
+					if res != co::DLGID::YES {
+						return;
+					}
+				}
+
+				let start = Instant::now();
+
+				if let Err(e) = patch::patch_installation(&target) {
+					selfc.wnd.hwnd().MessageBox(
+						&e.to_string(), "Patching error", co::MB::ICONERROR).unwrap();
+					return;
+				}
+
+				selfc.wnd.hwnd().MessageBox(
+					&format!("Installation successfully patched in {}μs.",
+						start.elapsed().as_micros()),
+					"Done", co::MB::ICONINFORMATION).unwrap();
 			}
 		});
 	}
