@@ -12,7 +12,7 @@ impl WndMain {
 	pub(super) fn events(&self) {
 		self.wnd.on().wm_init_dialog({
 			let selfc = self.clone();
-			move |_| {
+			move |_: msg::wm::InitDialog| -> bool {
 				selfc.lbl_path.resize_to_text().unwrap();
 				true
 			}
