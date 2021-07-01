@@ -1,6 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[macro_use] mod defer;
 mod ids;
+mod prompt;
 mod wnd_main;
 use wnd_main::WndMain;
 

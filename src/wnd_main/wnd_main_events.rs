@@ -1,10 +1,7 @@
 use std::time::Instant;
+use winsafe::{self as w, co, msg, shell};
 
-use winsafe as w;
-use winsafe::co;
-use winsafe::msg;
-use winsafe::shell;
-
+use crate::prompt;
 use super::WndMain;
 use super::patch;
 
@@ -36,13 +33,13 @@ impl WndMain {
 
 				fileo.SetOptions(
 					fileo.GetOptions().unwrap()
-						| co::FOS::FILEMUSTEXIST | co::FOS::PICKFOLDERS,
+						| shell::co::FOS::FILEMUSTEXIST | shell::co::FOS::PICKFOLDERS,
 				).unwrap();
 
 				if fileo.Show(self2.wnd.hwnd()).unwrap() {
 					self2.txt_path.set_text(
 						&fileo.GetResult().unwrap()
-							.GetDisplayName(co::SIGDN::FILESYSPATH).unwrap(),
+							.GetDisplayName(shell::co::SIGDN::FILESYSPATH).unwrap(),
 					).unwrap();
 
 					self2.btn_patch.hwnd().EnableWindow(true);
@@ -59,31 +56,17 @@ impl WndMain {
 				let target = self2.txt_path.text_str().unwrap();
 
 				if target.is_empty() {
-					self2.wnd.hwnd().TaskDialog(
-						None,
-						Some(&self2.wnd.hwnd().GetWindowTextStr().unwrap()),
-						Some("No path"),
-						Some("No installation path given."),
-						co::TDCBF::OK,
-						w::IdTdicon::Tdicon(co::TD_ICON::ERROR),
-					).unwrap();
-
+					prompt::err(self2.wnd.hwnd(), "No path", "No installation path given.");
 					self2.btn_choose.hwnd().SetFocus();
 					return;
 				}
 
 				if patch::is_vscode_running().unwrap() {
-					let res = self2.wnd.hwnd().TaskDialog(
-						None,
-						Some(&self2.wnd.hwnd().GetWindowTextStr().unwrap()),
-						Some("VS Code appears to be running"),
-						Some("It's recommended to close VS Code before patching.\n\
-							Proceed anyway?"),
-						co::TDCBF::YES | co::TDCBF::NO,
-						w::IdTdicon::Tdicon(co::TD_ICON::WARNING),
-					).unwrap();
-
-					if res != co::DLGID::YES {
+					if prompt::ok_cancel(self2.wnd.hwnd(),
+						"VS Code appears to be running",
+						"It's recommended to close VS Code before patching.\n\
+							Proceed anyway?") != co::DLGID::OK
+					{
 						return;
 					}
 				}
@@ -91,27 +74,13 @@ impl WndMain {
 				let start = Instant::now();
 
 				if let Err(e) = patch::patch_installation(&target) {
-					self2.wnd.hwnd().TaskDialog(
-						None,
-						Some(&self2.wnd.hwnd().GetWindowTextStr().unwrap()),
-						Some("Patching error"),
-						Some(&e.to_string()),
-						co::TDCBF::OK,
-						w::IdTdicon::Tdicon(co::TD_ICON::ERROR),
-					).unwrap();
-
+					prompt::err(self2.wnd.hwnd(), "Patching error", &e.to_string());
 					return;
 				}
 
-				self2.wnd.hwnd().TaskDialog(
-					None,
-					Some(&self2.wnd.hwnd().GetWindowTextStr().unwrap()),
-					Some("Operation successful"),
-					Some(&format!("Installation successfully patched in {}μs.",
-						start.elapsed().as_micros())),
-					co::TDCBF::OK,
-					w::IdTdicon::Tdicon(co::TD_ICON::INFORMATION),
-				).unwrap();
+				prompt::info(self2.wnd.hwnd(), "Operation successful",
+					&format!("Installation successfully patched in {}μs.",
+						start.elapsed().as_micros()));
 			}
 		});
 	}

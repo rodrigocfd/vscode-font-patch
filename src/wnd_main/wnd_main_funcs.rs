@@ -1,5 +1,4 @@
-use winsafe as w;
-use winsafe::gui;
+use winsafe::{self as w, gui};
 
 use crate::ids;
 use super::WndMain;

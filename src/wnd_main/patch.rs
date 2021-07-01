@@ -1,10 +1,10 @@
 use std::error::Error;
-
-use winsafe as w;
-use winsafe::co;
+use winsafe::{self as w, co};
 
 pub fn is_vscode_running() -> Result<bool, Box<dyn Error>> {
 	let hpl = w::HPROCESSLIST::CreateToolhelp32Snapshot(co::TH32CS::SNAPPROCESS, None)?;
+	defer! { hpl.CloseHandle().unwrap(); }
+
 	let mut pe = w::PROCESSENTRY32::default();
 	let mut found = false;
 
@@ -20,7 +20,6 @@ pub fn is_vscode_running() -> Result<bool, Box<dyn Error>> {
 		}
 	}
 
-	hpl.CloseHandle()?;
 	Ok(found)
 }
 
@@ -48,12 +47,12 @@ fn read_css_contents(css_path: &str) -> Result<String, Box<dyn Error>> {
 	let (hfile, _) = w::HFILE::CreateFile(css_path, co::GENERIC::READ,
 		co::FILE_SHARE::READ, None, co::DISPOSITION::OPEN_EXISTING,
 		co::FILE_ATTRIBUTE::NORMAL, None)?;
+	defer! { hfile.CloseHandle().unwrap(); }
 
 	let contents = String::from_utf8(
 		hfile.ReadFile(hfile.GetFileSizeEx()? as _, None)?
 	).unwrap();
 
-	hfile.CloseHandle()?;
 	Ok(contents)
 }
 
@@ -84,8 +83,8 @@ fn write_css_contents(css_path: &str, new_contents: &str) -> Result<(), Box<dyn 
 	let (hfile, _) = w::HFILE::CreateFile(css_path, co::GENERIC::READ | co::GENERIC::WRITE,
 		co::FILE_SHARE::NONE, None, co::DISPOSITION::TRUNCATE_EXISTING,
 		co::FILE_ATTRIBUTE::NORMAL, None)?;
+	defer! { hfile.CloseHandle().unwrap(); }
 
 	hfile.WriteFile(new_contents.as_bytes(), None)?;
-	hfile.CloseHandle()?;
 	Ok(())
 }
