@@ -2,7 +2,7 @@
 
 #[macro_use] mod defer;
 mod ids;
-mod prompt;
+mod util;
 mod wnd_main;
 use wnd_main::WndMain;
 

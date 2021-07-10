@@ -1,7 +1,6 @@
-use std::time::Instant;
 use winsafe::{self as w, co, msg, shell};
 
-use crate::prompt;
+use crate::util;
 use super::WndMain;
 use super::patch;
 
@@ -57,13 +56,13 @@ impl WndMain {
 				let target = self2.txt_path.text_str().unwrap();
 
 				if target.is_empty() {
-					prompt::err(self2.wnd.hwnd(), "No path", "No installation path given.");
+					util::prompt::err(self2.wnd.hwnd(), "No path", "No installation path given.");
 					self2.btn_choose.hwnd().SetFocus();
 					return;
 				}
 
 				if patch::is_vscode_running().unwrap() {
-					if prompt::ok_cancel(self2.wnd.hwnd(),
+					if util::prompt::ok_cancel(self2.wnd.hwnd(),
 						"VS Code appears to be running",
 						"It's recommended to close VS Code before patching.\n\
 							Proceed anyway?") != co::DLGID::OK
@@ -72,16 +71,15 @@ impl WndMain {
 					}
 				}
 
-				let start = Instant::now();
+				let clock = util::Timer::start();
 
 				if let Err(e) = patch::patch_installation(&target) {
-					prompt::err(self2.wnd.hwnd(), "Patching error", &e.to_string());
+					util::prompt::err(self2.wnd.hwnd(), "Patching error", &e.to_string());
 					return;
 				}
 
-				prompt::info(self2.wnd.hwnd(), "Operation successful",
-					&format!("Installation successfully patched in {}μs.",
-						start.elapsed().as_micros()));
+				util::prompt::info(self2.wnd.hwnd(), "Operation successful",
+					&format!("Installation successfully patched in {:.2}ms.", clock.now_ms()));
 			}
 		});
 	}
