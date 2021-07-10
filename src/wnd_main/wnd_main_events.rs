@@ -33,7 +33,8 @@ impl WndMain {
 
 				fileo.SetOptions(
 					fileo.GetOptions().unwrap()
-						| shell::co::FOS::FILEMUSTEXIST | shell::co::FOS::PICKFOLDERS,
+						| shell::co::FOS::FILEMUSTEXIST
+						| shell::co::FOS::PICKFOLDERS,
 				).unwrap();
 
 				if fileo.Show(self2.wnd.hwnd()).unwrap() {
