@@ -83,7 +83,7 @@ mod css {
 
 	pub fn write_contents(css_path: &str, new_contents: &str) -> Result<(), Box<dyn Error>> {
 		let (hfile, _) = w::HFILE::CreateFile(css_path, co::GENERIC::READ | co::GENERIC::WRITE,
-			co::FILE_SHARE::NONE, None, co::DISPOSITION::TRUNCATE_EXISTING,
+			co::FILE_SHARE::NoValue, None, co::DISPOSITION::TRUNCATE_EXISTING,
 			co::FILE_ATTRIBUTE::NORMAL, None)?;
 		defer! { hfile.CloseHandle().unwrap(); }
 
@@ -133,7 +133,7 @@ mod dlp {
 		}
 
 		let (hfile, _) = w::HFILE::CreateFile(dlp_path, co::GENERIC::READ | co::GENERIC::WRITE,
-			co::FILE_SHARE::NONE, None, co::DISPOSITION::TRUNCATE_EXISTING,
+			co::FILE_SHARE::NoValue, None, co::DISPOSITION::TRUNCATE_EXISTING,
 			co::FILE_ATTRIBUTE::NORMAL, None)?;
 		defer! { hfile.CloseHandle().unwrap(); }
 
