@@ -53,7 +53,7 @@ impl WndMain {
 		self.btn_patch.on().bn_clicked({
 			let self2 = self.clone();
 			move || {
-				let target = self2.txt_path.text_str().unwrap();
+				let target = self2.txt_path.text().unwrap();
 
 				if target.is_empty() {
 					util::prompt::err(self2.wnd.hwnd(), "No path", "No installation path given.");
