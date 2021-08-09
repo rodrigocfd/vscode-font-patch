@@ -23,6 +23,20 @@ impl WndMain {
 			}
 		});
 
+		self.chk_patch_font.on().bn_clicked({
+			let self2 = self.clone();
+			move || {
+				self2.maybe_enable_btn_run();
+			}
+		});
+
+		self.chk_patch_theme.on().bn_clicked({
+			let self2 = self.clone();
+			move || {
+				self2.maybe_enable_btn_run();
+			}
+		});
+
 		self.btn_choose.on().bn_clicked({
 			let self2 = self.clone();
 			move || {
@@ -44,10 +58,12 @@ impl WndMain {
 							.GetDisplayName(shell::co::SIGDN::FILESYSPATH).unwrap(),
 					).unwrap();
 
-					self2.btn_patch.hwnd().EnableWindow(true);
-					self2.wnd.hwnd().SendMessage(msg::wm::NextDlgCtl {
-						hwnd_focus: w::HwndFocus::Hwnd(self2.btn_patch.hwnd()),
-					});
+					self2.maybe_enable_btn_run();
+					if self2.btn_patch.hwnd().IsWindowEnabled() {
+						self2.wnd.hwnd().SendMessage(msg::wm::NextDlgCtl {
+							hwnd_focus: w::HwndFocus::Hwnd(self2.btn_patch.hwnd()),
+						});
+					}
 				}
 			}
 		});
@@ -55,21 +71,6 @@ impl WndMain {
 		self.btn_patch.on().bn_clicked({
 			let self2 = self.clone();
 			move || {
-				let target = self2.txt_path.text().unwrap();
-
-				if target.is_empty() {
-					util::prompt::err(self2.wnd.hwnd(), "No path", "No installation path given.");
-					self2.btn_choose.hwnd().SetFocus();
-					return;
-				}
-
-				if !self2.chk_patch_font.is_checked()
-					&& !self2.chk_patch_theme.is_checked()
-				{
-					util::prompt::err(self2.wnd.hwnd(), "No action", "No action to be performed.");
-					return;
-				}
-
 				if patch::is_vscode_running().unwrap() {
 					if util::prompt::ok_cancel(self2.wnd.hwnd(),
 						"VS Code appears to be running",
@@ -83,7 +84,7 @@ impl WndMain {
 				let clock = util::Timer::start();
 
 				if let Err(e) = patch::patch_installation(
-					&target,
+					&self2.txt_path.text().unwrap(),
 					self2.chk_patch_font.is_checked(),
 					self2.chk_patch_theme.is_checked(),
 				) {

@@ -26,4 +26,11 @@ impl WndMain {
 	pub fn run(&self) -> w::WinResult<()> {
 		self.wnd.run_main(None)
 	}
+
+	pub(super) fn maybe_enable_btn_run(&self) {
+		self.btn_patch.hwnd().EnableWindow(
+			!self.txt_path.text().unwrap().is_empty()
+				&& (self.chk_patch_font.is_checked() || self.chk_patch_theme.is_checked()),
+		);
+	}
 }
