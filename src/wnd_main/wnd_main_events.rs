@@ -1,8 +1,8 @@
 use winsafe::{self as w, co, msg, shell};
 
+use crate::patch;
 use crate::util;
 use super::WndMain;
-use super::patch;
 
 impl WndMain {
 	pub(super) fn events(&self) {
@@ -10,6 +10,8 @@ impl WndMain {
 			let self2 = self.clone();
 			move |_: msg::wm::InitDialog| -> bool {
 				self2.lbl_path.resize_to_text().unwrap();
+				self2.chk_patch_font.set_check(true);
+				self2.chk_patch_theme.set_check(true);
 				true
 			}
 		});
@@ -24,7 +26,7 @@ impl WndMain {
 		self.btn_choose.on().bn_clicked({
 			let self2 = self.clone();
 			move || {
-				let fileo: shell::IFileOpenDialog = w::CoCreateInstance(
+				let fileo = w::CoCreateInstance::<shell::IFileOpenDialog>(
 					&shell::clsid::FileOpenDialog,
 					None,
 					co::CLSCTX::INPROC_SERVER,
@@ -61,6 +63,13 @@ impl WndMain {
 					return;
 				}
 
+				if !self2.chk_patch_font.is_checked()
+					&& !self2.chk_patch_theme.is_checked()
+				{
+					util::prompt::err(self2.wnd.hwnd(), "No action", "No action to be performed.");
+					return;
+				}
+
 				if patch::is_vscode_running().unwrap() {
 					if util::prompt::ok_cancel(self2.wnd.hwnd(),
 						"VS Code appears to be running",
@@ -73,7 +82,11 @@ impl WndMain {
 
 				let clock = util::Timer::start();
 
-				if let Err(e) = patch::patch_installation(&target) {
+				if let Err(e) = patch::patch_installation(
+					&target,
+					self2.chk_patch_font.is_checked(),
+					self2.chk_patch_theme.is_checked(),
+				) {
 					util::prompt::err(self2.wnd.hwnd(), "Patching error", &e.to_string());
 					return;
 				}
