@@ -60,9 +60,7 @@ impl WndMain {
 
 					self2.maybe_enable_btn_run();
 					if self2.btn_patch.hwnd().IsWindowEnabled() {
-						self2.wnd.hwnd().SendMessage(msg::wm::NextDlgCtl {
-							hwnd_focus: w::HwndFocus::Hwnd(self2.btn_patch.hwnd()),
-						});
+						self2.btn_patch.focus().unwrap();
 					}
 				}
 			}
