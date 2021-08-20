@@ -1,3 +1,4 @@
+use defer_lite::defer;
 use std::error::Error;
 use winsafe::{self as w, co};
 
