@@ -1,4 +1,4 @@
-use winsafe::{self as w, co, msg, shell};
+use winsafe::{prelude::*, self as w, co, gui, msg, shell};
 
 use crate::patch;
 use crate::util;
@@ -8,11 +8,10 @@ impl WndMain {
 	pub(super) fn events(&self) {
 		self.wnd.on().wm_init_dialog({
 			let self2 = self.clone();
-			move |_: msg::wm::InitDialog| -> bool {
-				self2.lbl_path.resize_to_text().unwrap();
-				self2.chk_patch_font.set_check(true);
-				self2.chk_patch_theme.set_check(true);
-				true
+			move |_| {
+				self2.chk_patch_font.set_check_state(gui::CheckState::Checked);
+				self2.chk_patch_theme.set_check_state(gui::CheckState::Checked);
+				Ok(true)
 			}
 		});
 
@@ -20,6 +19,7 @@ impl WndMain {
 			let self2 = self.clone();
 			move || {
 				self2.wnd.hwnd().SendMessage(msg::wm::Close {});
+				Ok(())
 			}
 		});
 
@@ -27,6 +27,7 @@ impl WndMain {
 			let self2 = self.clone();
 			move || {
 				self2.maybe_enable_btn_run();
+				Ok(())
 			}
 		});
 
@@ -34,6 +35,7 @@ impl WndMain {
 			let self2 = self.clone();
 			move || {
 				self2.maybe_enable_btn_run();
+				Ok(())
 			}
 		});
 
@@ -44,54 +46,57 @@ impl WndMain {
 					&shell::clsid::FileOpenDialog,
 					None,
 					co::CLSCTX::INPROC_SERVER,
-				).unwrap();
+				)?;
 
 				fileo.SetOptions(
-					fileo.GetOptions().unwrap()
+					fileo.GetOptions()?
 						| shell::co::FOS::FILEMUSTEXIST
 						| shell::co::FOS::PICKFOLDERS,
-				).unwrap();
+					)?;
 
-				if fileo.Show(self2.wnd.hwnd()).unwrap() {
+				if fileo.Show(self2.wnd.hwnd())? {
 					self2.txt_path.set_text(
-						&fileo.GetResult().unwrap()
-							.GetDisplayName(shell::co::SIGDN::FILESYSPATH).unwrap(),
-					).unwrap();
+						&fileo.GetResult()?
+							.GetDisplayName(shell::co::SIGDN::FILESYSPATH)?,
+					)?;
 
 					self2.maybe_enable_btn_run();
 					if self2.btn_patch.hwnd().IsWindowEnabled() {
-						self2.btn_patch.focus().unwrap();
+						self2.btn_patch.focus()?;
 					}
 				}
+
+				Ok(())
 			}
 		});
 
 		self.btn_patch.on().bn_clicked({
 			let self2 = self.clone();
 			move || {
-				if patch::is_vscode_running().unwrap() {
+				if patch::is_vscode_running()? {
 					if util::prompt::ok_cancel(self2.wnd.hwnd(),
 						"VS Code appears to be running",
-						"It's recommended to close VS Code before patching.\n\
+						"It's recommended to close VS Code before patching.\n\n\
 							Proceed anyway?") != co::DLGID::OK
 					{
-						return;
+						return Ok(());
 					}
 				}
 
 				let clock = util::Timer::start();
 
 				if let Err(e) = patch::patch_installation(
-					&self2.txt_path.text().unwrap(),
+					&self2.txt_path.text()?,
 					self2.chk_patch_font.is_checked(),
 					self2.chk_patch_theme.is_checked(),
 				) {
 					util::prompt::err(self2.wnd.hwnd(), "Patching error", &e.to_string());
-					return;
+				} else {
+					util::prompt::info(self2.wnd.hwnd(), "Operation successful",
+						&format!("Installation successfully patched in {:.2}ms.", clock.now_ms()));
 				}
 
-				util::prompt::info(self2.wnd.hwnd(), "Operation successful",
-					&format!("Installation successfully patched in {:.2}ms.", clock.now_ms()));
+				Ok(())
 			}
 		});
 	}

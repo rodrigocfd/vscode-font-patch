@@ -1,6 +1,4 @@
-use defer_lite::defer;
-use std::error::Error;
-use winsafe::{self as w, co};
+use winsafe::{prelude::*, self as w, co};
 
 pub fn build_path(install_dir: &str) -> String {
 	const INNER_CSS: &str = "resources\\app\\out\\vs\\workbench\\workbench.desktop.main.css";
@@ -15,15 +13,15 @@ pub fn build_path(install_dir: &str) -> String {
 	css_path
 }
 
-pub fn read_contents(css_path: &str) -> Result<String, Box<dyn Error>> {
-	let mapin = w::MappedFile::open(css_path, w::MappedFileAccess::Read)?;
+pub fn read_contents(css_path: &str) -> w::ErrResult<String> {
+	let mapin = w::FileMapped::open(css_path, w::FileAccess::ExistingReadOnly)?;
 	let contents = String::from_utf8(
 		mapin.as_slice().to_vec(),
 	)?;
 	Ok(contents)
 }
 
-pub fn apply_patch(orig_contents: &str) -> Result<String, Box<dyn Error>> {
+pub fn apply_patch(orig_contents: &str) -> w::ErrResult<String> {
 	const END_OF_COMMS: &str = "-*/";
 	const MAGIC_PATCH: &str = "*{text-shadow:transparent 0px 0px 0px, rgba(0, 0, 0, 0.5) 0px 0px 0px !important;}";
 
@@ -46,12 +44,13 @@ pub fn apply_patch(orig_contents: &str) -> Result<String, Box<dyn Error>> {
 	Ok(new_contents)
 }
 
-pub fn write_contents(css_path: &str, new_contents: &str) -> Result<(), Box<dyn Error>> {
-	let (hfile, _) = w::HFILE::CreateFile(css_path, co::GENERIC::READ | co::GENERIC::WRITE,
-		co::FILE_SHARE::NoValue, None, co::DISPOSITION::TRUNCATE_EXISTING,
+pub fn write_contents(css_path: &str, new_contents: &str) -> w::ErrResult<()> {
+	let (hfile, _) = w::HFILE::CreateFile(css_path,
+		co::GENERIC::READ | co::GENERIC::WRITE,
+		co::FILE_SHARE::NoValue, None,
+		co::DISPOSITION::TRUNCATE_EXISTING,
 		co::FILE_ATTRIBUTE::NORMAL, None)?;
-	defer! { hfile.CloseHandle().unwrap(); }
 
 	hfile.WriteFile(new_contents.as_bytes(), None)?;
-	Ok(())
+	hfile.CloseHandle().map_err(|e| e.into())
 }

@@ -1,6 +1,4 @@
-use defer_lite::defer;
-use std::error::Error;
-use winsafe::{self as w, co};
+use winsafe::{prelude::*, self as w, co};
 
 pub fn build_path(install_dir: &str) -> String {
 	const DLP_JSON: &str = "resources\\app\\extensions\\theme-defaults\\themes\\light_vs.json";
@@ -15,12 +13,12 @@ pub fn build_path(install_dir: &str) -> String {
 	css_path
 }
 
-pub fn fix_theme_json(dlp_path: &str) -> Result<(), Box<dyn Error>> {
+pub fn fix_theme_json(dlp_path: &str) -> w::ErrResult<()> {
 	let mut new_contents = String::default();
 	let mut found = false;
 
 	{
-		let mapin = w::MappedFile::open(dlp_path, w::MappedFileAccess::Read)?;
+		let mapin = w::FileMapped::open(dlp_path, w::FileAccess::ExistingReadOnly)?;
 		let contents = String::from_utf8(mapin.as_slice().to_vec())?;
 		new_contents.reserve(contents.len() + 3);
 		for line in contents.lines() {
@@ -38,11 +36,12 @@ pub fn fix_theme_json(dlp_path: &str) -> Result<(), Box<dyn Error>> {
 		return Err("Default Light+ theme setting not found, not patched.".into());
 	}
 
-	let (hfile, _) = w::HFILE::CreateFile(dlp_path, co::GENERIC::READ | co::GENERIC::WRITE,
-		co::FILE_SHARE::NoValue, None, co::DISPOSITION::TRUNCATE_EXISTING,
+	let (hfile, _) = w::HFILE::CreateFile(dlp_path,
+		co::GENERIC::READ | co::GENERIC::WRITE,
+		co::FILE_SHARE::NoValue, None,
+		co::DISPOSITION::TRUNCATE_EXISTING,
 		co::FILE_ATTRIBUTE::NORMAL, None)?;
-	defer! { hfile.CloseHandle().unwrap(); }
 
 	hfile.WriteFile(new_contents.as_bytes(), None)?;
-	Ok(())
+	hfile.CloseHandle().map_err(|e| e.into())
 }

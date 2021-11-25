@@ -1,17 +1,18 @@
-use winsafe::{self as w, gui};
+use winsafe::{prelude::*, self as w, gui};
 
-use crate::ids;
-use super::WndMain;
+use super::{ids, WndMain};
 
 impl WndMain {
 	pub fn new() -> Self {
-		let wnd             = gui::WindowMain::new_dlg(ids::DIALOG_MAIN, Some(ids::MAIN_ICON), None);
-		let lbl_path        = gui::Label::new_dlg(&wnd, ids::LBL_PATH);
-		let txt_path        = gui::Edit::new_dlg(&wnd, ids::TXT_PATH);
-		let btn_choose      = gui::Button::new_dlg(&wnd, ids::BTN_CHOOSE);
-		let chk_patch_font  = gui::CheckBox::new_dlg(&wnd, ids::CHK_PATCH_FONT);
-		let chk_patch_theme = gui::CheckBox::new_dlg(&wnd, ids::CHK_PATCH_THEME);
-		let btn_patch       = gui::Button::new_dlg(&wnd, ids::BTN_PATCH);
+		let hv_none = (gui::Horz::None, gui::Vert::None);
+
+		let wnd             = gui::WindowMain::new_dlg(ids::DLG_MAIN, Some(ids::ICO_MAIN), None);
+		let lbl_path        = gui::Label::new_dlg(&wnd, ids::LBL_PATH, hv_none);
+		let txt_path        = gui::Edit::new_dlg(&wnd, ids::TXT_PATH, hv_none);
+		let btn_choose      = gui::Button::new_dlg(&wnd, ids::BTN_CHOOSE, hv_none);
+		let chk_patch_font  = gui::CheckBox::new_dlg(&wnd, ids::CHK_PATCH_FONT, hv_none);
+		let chk_patch_theme = gui::CheckBox::new_dlg(&wnd, ids::CHK_PATCH_THEME, hv_none);
+		let btn_patch       = gui::Button::new_dlg(&wnd, ids::BTN_PATCH, hv_none);
 
 		let self2 = Self {
 			wnd,
@@ -23,7 +24,7 @@ impl WndMain {
 		self2
 	}
 
-	pub fn run(&self) -> w::WinResult<()> {
+	pub fn run(&self) -> w::ErrResult<i32> {
 		self.wnd.run_main(None)
 	}
 

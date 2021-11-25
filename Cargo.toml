@@ -11,7 +11,6 @@ codegen-units = 1
 #panic = "abort"
 
 [dependencies]
-defer-lite = "1.0.0"
 winsafe = { path = "../winsafe", features = ["shell"] }
 
 # https://doc.rust-lang.org/reference/linkage.html#static-and-dynamic-c-runtimes
