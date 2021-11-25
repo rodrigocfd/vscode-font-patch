@@ -5,7 +5,7 @@ use crate::util;
 use super::WndMain;
 
 impl WndMain {
-	pub(super) fn events(&self) {
+	pub(super) fn _events(&self) {
 		self.wnd.on().wm_init_dialog({
 			let self2 = self.clone();
 			move |_| {
@@ -26,7 +26,7 @@ impl WndMain {
 		self.chk_patch_font.on().bn_clicked({
 			let self2 = self.clone();
 			move || {
-				self2.maybe_enable_btn_run();
+				self2._maybe_enable_btn_run();
 				Ok(())
 			}
 		});
@@ -34,7 +34,7 @@ impl WndMain {
 		self.chk_patch_theme.on().bn_clicked({
 			let self2 = self.clone();
 			move || {
-				self2.maybe_enable_btn_run();
+				self2._maybe_enable_btn_run();
 				Ok(())
 			}
 		});
@@ -52,7 +52,7 @@ impl WndMain {
 					fileo.GetOptions()?
 						| shell::co::FOS::FILEMUSTEXIST
 						| shell::co::FOS::PICKFOLDERS,
-					)?;
+				)?;
 
 				if fileo.Show(self2.wnd.hwnd())? {
 					self2.txt_path.set_text(
@@ -60,7 +60,7 @@ impl WndMain {
 							.GetDisplayName(shell::co::SIGDN::FILESYSPATH)?,
 					)?;
 
-					self2.maybe_enable_btn_run();
+					self2._maybe_enable_btn_run();
 					if self2.btn_patch.hwnd().IsWindowEnabled() {
 						self2.btn_patch.focus()?;
 					}
@@ -74,10 +74,13 @@ impl WndMain {
 			let self2 = self.clone();
 			move || {
 				if patch::is_vscode_running()? {
-					if util::prompt::ok_cancel(self2.wnd.hwnd(),
+					if util::prompt::ok_cancel(
+						self2.wnd.hwnd(),
+						util::prompt::DefBtn::Cancel,
 						"VS Code appears to be running",
 						"It's recommended to close VS Code before patching.\n\n\
-							Proceed anyway?") != co::DLGID::OK
+							Proceed anyway?",
+					) != co::DLGID::OK
 					{
 						return Ok(());
 					}
