@@ -74,14 +74,13 @@ impl WndMain {
 			let self2 = self.clone();
 			move || {
 				if patch::is_vscode_running()? {
-					if util::prompt::ok_cancel(
+					if !util::prompt::ok_cancel(
 						self2.wnd.hwnd(),
 						util::prompt::DefBtn::Cancel,
 						"VS Code appears to be running",
 						"It's recommended to close VS Code before patching.\n\n\
 							Proceed anyway?",
-					) != co::DLGID::OK
-					{
+					) {
 						return Ok(());
 					}
 				}
