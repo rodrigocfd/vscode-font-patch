@@ -14,9 +14,9 @@ pub fn build_path(install_dir: &str) -> String {
 }
 
 pub fn read_contents(css_path: &str) -> w::ErrResult<String> {
-	let mapin = w::FileMapped::open(css_path, w::FileAccess::ExistingReadOnly)?;
+	let fin = w::FileMapped::open(css_path, w::FileAccess::ExistingReadOnly)?;
 	let contents = String::from_utf8(
-		mapin.as_slice().to_vec(),
+		fin.as_slice().to_vec(),
 	)?;
 	Ok(contents)
 }
@@ -45,12 +45,7 @@ pub fn apply_patch(orig_contents: &str) -> w::ErrResult<String> {
 }
 
 pub fn write_contents(css_path: &str, new_contents: &str) -> w::ErrResult<()> {
-	let (hfile, _) = w::HFILE::CreateFile(css_path,
-		co::GENERIC::READ | co::GENERIC::WRITE,
-		co::FILE_SHARE::NoValue, None,
-		co::DISPOSITION::TRUNCATE_EXISTING,
-		co::FILE_ATTRIBUTE::NORMAL, None)?;
-
-	hfile.WriteFile(new_contents.as_bytes(), None)?;
-	hfile.CloseHandle().map_err(|e| e.into())
+	let fout = w::File::open(css_path, w::FileAccess::ExistingReadWrite)?;
+	fout.erase_and_write(new_contents.as_bytes())?;
+	Ok(())
 }
