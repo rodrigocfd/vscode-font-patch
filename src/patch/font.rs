@@ -23,8 +23,9 @@ pub fn read_contents(css_path: &str) -> w::ErrResult<String> {
 
 pub fn apply_patch(orig_contents: &str) -> w::ErrResult<String> {
 	const END_OF_COMMS: &str = "-*/";
-	const MAGIC_PATCH: &str = "*{text-shadow:transparent 0px 0px 0px, rgba(0, 0, 0, 0.5) 0px 0px 0px !important;}";
+	const MAGIC_PATCH: &str = "\n*{text-shadow:transparent 0px 0px 0px, rgba(0, 0, 0, 0.5) 0px 0px 0px !important;}";
 
+	// Find index past the comments block.
 	let mut idx_start_code = match orig_contents.find(END_OF_COMMS) {
 		Some(idx) => idx,
 		None => return Err("End of comments not found.".into()),
@@ -32,14 +33,15 @@ pub fn apply_patch(orig_contents: &str) -> w::ErrResult<String> {
 
 	idx_start_code += END_OF_COMMS.len();
 
+	// Is our magic path the first thing past the comments block?
 	if MAGIC_PATCH == &orig_contents[idx_start_code..(idx_start_code + MAGIC_PATCH.len())] {
 		return Err("Installation already patched, nothing to do.".into());
 	}
 
 	let mut new_contents = String::with_capacity(orig_contents.len() + MAGIC_PATCH.len());
-	new_contents.push_str(&orig_contents[..idx_start_code]);
+	new_contents.push_str(&orig_contents[..idx_start_code]); // comments block
 	new_contents.push_str(MAGIC_PATCH);
-	new_contents.push_str(&orig_contents[idx_start_code..]);
+	new_contents.push_str(&orig_contents[idx_start_code..]); // rest of file
 
 	Ok(new_contents)
 }
