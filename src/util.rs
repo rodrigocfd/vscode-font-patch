@@ -15,7 +15,7 @@ impl Timer {
 }
 
 pub mod prompt {
-	use winsafe::{prelude::*, self as w, co};
+	use winsafe::{self as w, co};
 
 	pub enum DefBtn { Ok, Cancel }
 

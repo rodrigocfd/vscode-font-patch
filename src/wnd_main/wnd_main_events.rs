@@ -1,4 +1,4 @@
-use winsafe::{prelude::*, self as w, co, gui, msg, shell};
+use winsafe::{prelude::*, self as w, co, msg, shell};
 
 use crate::patch;
 use crate::util;
@@ -6,35 +6,10 @@ use super::WndMain;
 
 impl WndMain {
 	pub(super) fn _events(&self) {
-		self.wnd.on().wm_init_dialog({
-			let self2 = self.clone();
-			move |_| {
-				self2.chk_patch_font.set_check_state(gui::CheckState::Checked);
-				self2.chk_patch_theme.set_check_state(gui::CheckState::Checked);
-				Ok(true)
-			}
-		});
-
 		self.wnd.on().wm_command_accel_menu(co::DLGID::CANCEL.into(), {
 			let self2 = self.clone();
 			move || {
 				self2.wnd.hwnd().SendMessage(msg::wm::Close {});
-				Ok(())
-			}
-		});
-
-		self.chk_patch_font.on().bn_clicked({
-			let self2 = self.clone();
-			move || {
-				self2._maybe_enable_btn_run();
-				Ok(())
-			}
-		});
-
-		self.chk_patch_theme.on().bn_clicked({
-			let self2 = self.clone();
-			move || {
-				self2._maybe_enable_btn_run();
 				Ok(())
 			}
 		});
@@ -60,46 +35,48 @@ impl WndMain {
 							.GetDisplayName(shell::co::SIGDN::FILESYSPATH)?,
 					)?;
 
-					self2._maybe_enable_btn_run();
-					if self2.btn_patch.hwnd().IsWindowEnabled() {
-						self2.btn_patch.focus()?;
-					}
+					self2.btn_patch_font.hwnd().EnableWindow(true);
+					self2.btn_patch_icon.hwnd().EnableWindow(true);
 				}
 
 				Ok(())
 			}
 		});
 
-		self.btn_patch.on().bn_clicked({
+		self.btn_patch_font.on().bn_clicked({
 			let self2 = self.clone();
 			move || {
-				if patch::is_vscode_running()? {
-					if !util::prompt::ok_cancel(
-						self2.wnd.hwnd(),
-						util::prompt::DefBtn::Cancel,
-						"VS Code appears to be running",
-						"It's recommended to close VS Code before patching.\n\n\
-							Proceed anyway?",
-					) {
-						return Ok(());
-					}
+				if !self2._ok_if_running()? {
+					return Ok(())
 				}
 
 				let clock = util::Timer::start();
-
-				if let Err(e) = patch::patch_installation(
-					&self2.txt_path.text()?,
-					self2.chk_patch_font.is_checked(),
-					self2.chk_patch_theme.is_checked(),
-				) {
-					util::prompt::err(self2.wnd.hwnd(), "Patching error", &e.to_string());
-				} else {
-					util::prompt::info(self2.wnd.hwnd(), "Operation successful",
-						&format!("Installation successfully patched in {:.2}ms.", clock.now_ms()));
+				match patch::patch_font(&self2.txt_path.text()?) {
+					Err(e) => util::prompt::err(self2.wnd.hwnd(), "Patching error", &e.to_string()),
+					Ok(_) => util::prompt::info(self2.wnd.hwnd(), "Operation successful",
+						&format!("Font successfully patched in {:.2}ms.", clock.now_ms())),
 				}
 
 				Ok(())
 			}
 		});
+
+		self.btn_patch_icon.on().bn_clicked({
+			let self2 = self.clone();
+			move || {
+				if !self2._ok_if_running()? {
+					return Ok(())
+				}
+
+				let clock = util::Timer::start();
+				match patch::patch_icon(&self2.txt_path.text()?) {
+					Err(e) => util::prompt::err(self2.wnd.hwnd(), "Patching error", &e.to_string()),
+					Ok(_) => util::prompt::info(self2.wnd.hwnd(), "Operation successful",
+						&format!("Suggestion box icon successfully patched in {:.2}ms.", clock.now_ms())),
+				}
+
+				Ok(())
+			}
+		})
 	}
 }
