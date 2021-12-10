@@ -33,7 +33,7 @@ pub fn patch_font(install_dir: &str) -> w::ErrResult<()> {
 
 	// Is our magic path the first thing past the comments block?
 	if MAGIC_PATCH == &orig_contents[idx_start_code..(idx_start_code + MAGIC_PATCH.len())] {
-		return Err("Font already patched.".into());
+		return Err("Font already patched.\n\nNothing to do.".into());
 	}
 
 	let mut new_contents = String::with_capacity(orig_contents.len() + MAGIC_PATCH.len());
@@ -52,7 +52,7 @@ pub fn patch_icon(install_dir: &str) -> w::ErrResult<()> {
 	const PATCHED: &str = " /*.monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused .codicon{color:var(--vscode-editorSuggestWidget-selectedIconForeground)}*/ ";
 
 	if let Some(_) = orig_contents.find(PATCHED) {
-		return Err("Suggestion box icon already patched.".into());
+		return Err("Suggestion box icon already patched.\n\nNothing to do.".into());
 	}
 
 	let idx_part = match orig_contents.find(NATURAL) {
@@ -69,24 +69,15 @@ pub fn patch_icon(install_dir: &str) -> w::ErrResult<()> {
 }
 
 fn _build_css_path(install_dir: &str) -> String {
-	const INNER_CSS: &str = "resources\\app\\out\\vs\\workbench\\workbench.desktop.main.css";
-
-	let mut css_path = String::with_capacity(install_dir.len() + 1 + INNER_CSS.len());
-	css_path.push_str(install_dir);
-	if !css_path.ends_with("\\") {
-		css_path.push('\\');
-	}
-	css_path.push_str(INNER_CSS);
-
-	css_path
+	format!("{}\\{}",
+		w::path::rtrim_backslash(install_dir),
+		"resources\\app\\out\\vs\\workbench\\workbench.desktop.main.css")
 }
 
 fn _read_css_contents(css_path: &str) -> w::ErrResult<String> {
 	let fin = w::FileMapped::open(css_path, w::FileAccess::ExistingReadOnly)?;
-	let contents = String::from_utf8(
-		fin.as_slice().to_vec(),
-	)?;
-	Ok(contents)
+	String::from_utf8(fin.as_slice().to_vec())
+		.map_err(|e| e.into())
 }
 
 fn _write_replace_css_contents(css_path: &str, new_contents: &str) -> w::ErrResult<()> {
