@@ -1,4 +1,4 @@
-use winsafe::{prelude::*, self as w, co, msg, shell};
+use winsafe::{prelude::*, self as w, co, msg};
 
 use crate::patch;
 use crate::util;
@@ -17,22 +17,22 @@ impl WndMain {
 		self.btn_choose.on().bn_clicked({
 			let self2 = self.clone();
 			move || {
-				let fileo = w::CoCreateInstance::<shell::IFileOpenDialog>(
-					&shell::clsid::FileOpenDialog,
+				let fileo = w::CoCreateInstance::<w::IFileOpenDialog>(
+					&w::CLSID::FileOpenDialog,
 					None,
 					co::CLSCTX::INPROC_SERVER,
 				)?;
 
 				fileo.SetOptions(
 					fileo.GetOptions()?
-						| shell::co::FOS::FILEMUSTEXIST
-						| shell::co::FOS::PICKFOLDERS,
+						| co::FOS::FILEMUSTEXIST
+						| co::FOS::PICKFOLDERS,
 				)?;
 
 				if fileo.Show(self2.wnd.hwnd())? {
 					self2.txt_path.set_text(
 						&fileo.GetResult()?
-							.GetDisplayName(shell::co::SIGDN::FILESYSPATH)?,
+							.GetDisplayName(co::SIGDN::FILESYSPATH)?,
 					)?;
 
 					self2.btn_patch_font.hwnd().EnableWindow(true);
