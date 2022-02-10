@@ -1,6 +1,8 @@
 # VSCode Font Patch
 
-A command line utility to patch a Visual Studio Code installation on **Windows**, slightly enhancing the font rendering.
+A command line utility to patch a Visual Studio Code installation, slightly enhancing the font rendering on Windows.
+
+Also fixes the autocomplete highlighted icon for both Windows and Linux, which is messed up [since February 2021 release](https://stackoverflow.com/q/68321114/6923555).
 
 ## Comparison
 
@@ -14,11 +16,11 @@ A command line utility to patch a Visual Studio Code installation on **Windows**
 
 ## Usage
 
-Close VSCode and run the command line, passing the VSCode installation path as the single argument.
+1. Write the proper VSCode installation path in `vscode-font-patch.ini`;
+2. Close VSCode, if running;
+3. Run the patch.
 
-Example:
-
-    vscode-font-patch "C:\My stuff\Microsoft VS Code"
+Notice that, if you installed VSCode in Linux with `sudo`, you'll need to run the patch with `sudo` as well.
 
 When opening VSCode again, you will see a warning about a corrupted installation. If you don't ignore it, the changes made by the patch will be reverted.
 
