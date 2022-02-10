@@ -31,7 +31,9 @@ func main() {
 	}
 
 	if cssChanged {
-		ioutil.WriteFile(cssPath, []byte(cssContent), 0644)
+		if err := ioutil.WriteFile(cssPath, []byte(cssContent), 0644); err != nil {
+			panic(err)
+		}
 		fmt.Println("> Patch successfully applied.")
 	} else {
 		fmt.Println("> Nothing to do.")
