@@ -18,7 +18,7 @@ impl WndMain {
 			let self2 = self.clone();
 			move || {
 				let fileo = w::CoCreateInstance::<w::IFileOpenDialog>(
-					&w::CLSID::FileOpenDialog,
+					&co::CLSID::FileOpenDialog,
 					None,
 					co::CLSCTX::INPROC_SERVER,
 				)?;
@@ -33,7 +33,7 @@ impl WndMain {
 					self2.txt_path.set_text(
 						&fileo.GetResult()?
 							.GetDisplayName(co::SIGDN::FILESYSPATH)?,
-					)?;
+					);
 
 					self2.btn_patch_font.hwnd().EnableWindow(true);
 					self2.btn_patch_icon.hwnd().EnableWindow(true);
@@ -51,7 +51,7 @@ impl WndMain {
 				}
 
 				let clock = util::Timer::start();
-				match patch::patch_font(&self2.txt_path.text()?) {
+				match patch::patch_font(&self2.txt_path.text()) {
 					Err(e) => util::prompt::err(self2.wnd.hwnd(), "Patching failed", &e.to_string()),
 					Ok(_) => util::prompt::info(self2.wnd.hwnd(), "Operation successful",
 						&format!("Font successfully patched in {:.2}ms.", clock.now_ms())),
@@ -69,7 +69,7 @@ impl WndMain {
 				}
 
 				let clock = util::Timer::start();
-				match patch::patch_icon(&self2.txt_path.text()?) {
+				match patch::patch_icon(&self2.txt_path.text()) {
 					Err(e) => util::prompt::err(self2.wnd.hwnd(), "Patching failed", &e.to_string()),
 					Ok(_) => util::prompt::info(self2.wnd.hwnd(), "Operation successful",
 						&format!("Suggestion box icon successfully patched in {:.2}ms.", clock.now_ms())),
