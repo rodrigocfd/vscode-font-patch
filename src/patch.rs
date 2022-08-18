@@ -1,6 +1,6 @@
 use winsafe::{prelude::*, self as w, co};
 
-pub fn is_vscode_running() -> w::ErrResult<bool> {
+pub fn is_vscode_running() -> w::SysResult<bool> {
 	let hpl = w::HPROCESSLIST::CreateToolhelp32Snapshot(co::TH32CS::SNAPPROCESS, None)?;
 	let mut pe = w::PROCESSENTRY32::default();
 	let mut found = false;
@@ -16,7 +16,7 @@ pub fn is_vscode_running() -> w::ErrResult<bool> {
 	Ok(found)
 }
 
-pub fn patch_font(install_dir: &str) -> w::ErrResult<()> {
+pub fn patch_font(install_dir: &str) -> w::AnyResult<()> {
 	let css_path = _build_css_path(install_dir);
 	let orig_contents = _read_css_contents(&css_path)?;
 
@@ -41,10 +41,11 @@ pub fn patch_font(install_dir: &str) -> w::ErrResult<()> {
 	new_contents.push_str(MAGIC_PATCH);
 	new_contents.push_str(&orig_contents[idx_start_code..]); // rest of file
 
-	_write_replace_css_contents(&css_path, &new_contents)
+	_write_replace_css_contents(&css_path, &new_contents)?;
+	Ok(())
 }
 
-pub fn patch_icon(install_dir: &str) -> w::ErrResult<()> {
+pub fn patch_icon(install_dir: &str) -> w::AnyResult<()> {
 	let css_path = _build_css_path(install_dir);
 	let orig_contents = _read_css_contents(&css_path)?;
 
@@ -65,7 +66,8 @@ pub fn patch_icon(install_dir: &str) -> w::ErrResult<()> {
 	new_contents.push_str(PATCHED);
 	new_contents.push_str(&orig_contents[idx_part + NATURAL.len()..]); // rest of file
 
-	_write_replace_css_contents(&css_path, &new_contents)
+	_write_replace_css_contents(&css_path, &new_contents)?;
+	Ok(())
 }
 
 fn _build_css_path(install_dir: &str) -> String {
@@ -74,14 +76,14 @@ fn _build_css_path(install_dir: &str) -> String {
 		"resources\\app\\out\\vs\\workbench\\workbench.desktop.main.css")
 }
 
-fn _read_css_contents(css_path: &str) -> w::ErrResult<String> {
+fn _read_css_contents(css_path: &str) -> w::SysResult<String> {
 	let fin = w::FileMapped::open(css_path, w::FileAccess::ExistingReadOnly)?;
-	String::from_utf8(fin.as_slice().to_vec())
-		.map_err(|e| e.into())
+	let s = w::WString::parse_str(fin.as_slice())?.to_string();
+	Ok(s)
 }
 
-fn _write_replace_css_contents(css_path: &str, new_contents: &str) -> w::ErrResult<()> {
-	let fout = w::File::open(css_path, w::FileAccess::ExistingReadWrite)?;
+fn _write_replace_css_contents(css_path: &str, new_contents: &str) -> w::SysResult<()> {
+	let fout = w::File::open(css_path, w::FileAccess::ExistingRW)?;
 	fout.erase_and_write(new_contents.as_bytes())?;
 	Ok(())
 }

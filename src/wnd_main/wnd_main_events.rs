@@ -37,6 +37,7 @@ impl WndMain {
 
 					self2.btn_patch_font.hwnd().EnableWindow(true);
 					self2.btn_patch_icon.hwnd().EnableWindow(true);
+					self2.btn_patch_font.focus();
 				}
 
 				Ok(())
@@ -52,9 +53,9 @@ impl WndMain {
 
 				let clock = util::Timer::start();
 				match patch::patch_font(&self2.txt_path.text()) {
-					Err(e) => util::prompt::err(self2.wnd.hwnd(), "Patching failed", &e.to_string()),
-					Ok(_) => util::prompt::info(self2.wnd.hwnd(), "Operation successful",
-						&format!("Font successfully patched in {:.2}ms.", clock.now_ms())),
+					Err(e) => w::task_dlg::error(self2.wnd.hwnd(), "Patching failed", None, &e.to_string())?,
+					Ok(_) => w::task_dlg::info(self2.wnd.hwnd(), "Operation successful", None,
+						&format!("Font successfully patched in {:.2}ms.", clock.now_ms()))?,
 				}
 
 				Ok(())
@@ -70,9 +71,9 @@ impl WndMain {
 
 				let clock = util::Timer::start();
 				match patch::patch_icon(&self2.txt_path.text()) {
-					Err(e) => util::prompt::err(self2.wnd.hwnd(), "Patching failed", &e.to_string()),
-					Ok(_) => util::prompt::info(self2.wnd.hwnd(), "Operation successful",
-						&format!("Suggestion box icon successfully patched in {:.2}ms.", clock.now_ms())),
+					Err(e) => w::task_dlg::error(self2.wnd.hwnd(), "Patching failed", None, &e.to_string())?,
+					Ok(_) => w::task_dlg::info(self2.wnd.hwnd(), "Operation successful", None,
+						&format!("Suggestion box icon successfully patched in {:.2}ms.", clock.now_ms()))?,
 				}
 
 				Ok(())
