@@ -32,7 +32,7 @@ impl WndMain {
 			return Ok(true) // it's not even running
 		}
 
-		w::task_dlg::ok_cancel(
+		let clicked_ok = w::task_dlg::ok_cancel(
 			self.wnd.hwnd(),
 			"VS Code appears to be running",
 			None,
@@ -40,6 +40,8 @@ impl WndMain {
 				If you run the patch now, you must reload VS Code.\n\n\
 				Proceed anyway?",
 			Some("Proceed"),
-		).map_err(|err| err.into())
+		)?;
+
+		Ok(clicked_ok)
 	}
 }
