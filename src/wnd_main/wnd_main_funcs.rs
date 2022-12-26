@@ -38,8 +38,8 @@ impl WndMain {
 			None,
 			"It's recommended to close VS Code before patching.\n\
 				If you run the patch now, you must reload VS Code.\n\n\
-				Proceed anyway?",
-			Some("Proceed"),
+				Patch anyway?",
+			Some("Patch"),
 		)?;
 
 		Ok(clicked_ok)

@@ -2,17 +2,15 @@ use winsafe::{prelude::*, self as w, co};
 
 pub fn is_vscode_running() -> w::SysResult<bool> {
 	let hpl = w::HPROCESSLIST::CreateToolhelp32Snapshot(co::TH32CS::SNAPPROCESS, None)?;
-	let mut pe = w::PROCESSENTRY32::default();
 	let mut found = false;
 
-	for pe in hpl.iter(&mut pe) {
+	for pe in hpl.iter_processes() {
 		if pe?.szExeFile() == "Code.exe" {
 			found = true;
 			break;
 		}
 	}
 
-	hpl.CloseHandle()?;
 	Ok(found)
 }
 
@@ -78,7 +76,7 @@ fn _build_css_path(install_dir: &str) -> String {
 
 fn _read_css_contents(css_path: &str) -> w::SysResult<String> {
 	let fin = w::FileMapped::open(css_path, w::FileAccess::ExistingReadOnly)?;
-	let s = w::WString::parse_str(fin.as_slice())?.to_string();
+	let s = w::WString::parse(fin.as_slice())?.to_string();
 	Ok(s)
 }
 
