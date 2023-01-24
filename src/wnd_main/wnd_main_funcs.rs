@@ -23,7 +23,7 @@ impl WndMain {
 		self2
 	}
 
-	pub fn run(&self) -> gui::MsgResult<i32> {
+	pub fn run(&self) -> w::AnyResult<i32> {
 		self.wnd.run_main(None)
 	}
 
