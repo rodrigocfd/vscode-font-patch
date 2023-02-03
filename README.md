@@ -1,6 +1,9 @@
 # VSCode Font Patch
 
-A command line utility to patch a Visual Studio Code installation on **Windows**, slightly enhancing the font rendering.
+A command line utility to patch a Visual Studio Code installation on **Windows**, which does two things:
+
+- slightly enhances the font rendering;
+- fixes the autocomplete icon color ([ref](https://stackoverflow.com/q/68321114/6923555)).
 
 ## Usage
 
@@ -12,7 +15,7 @@ When opening VSCode again, you will see a warning about a corrupted installation
 
 To revert the patch, simply run VS Code installer again.
 
-## Comparison before/after patch
+## Font comparison before/after patch
 
 * Using Consolas font (original vs. patched)
 
