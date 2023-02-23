@@ -1,7 +1,7 @@
 use winsafe::{prelude::*, self as w, co};
 
 pub fn is_vscode_running() -> w::SysResult<bool> {
-	let hpl = w::HPROCESSLIST::CreateToolhelp32Snapshot(co::TH32CS::SNAPPROCESS, None)?;
+	let mut hpl = w::HPROCESSLIST::CreateToolhelp32Snapshot(co::TH32CS::SNAPPROCESS, None)?;
 	let mut found = false;
 
 	for pe in hpl.iter_processes() {
