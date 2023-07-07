@@ -1,6 +1,5 @@
 **/target
 *.code-workspace
-*.lib
 .vscode
 Cargo.lock
 deploy.sh
