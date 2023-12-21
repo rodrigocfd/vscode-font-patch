@@ -1,4 +1,4 @@
-use winsafe::{prelude::*, self as w, gui};
+use winsafe::{prelude::*, self as w, co, gui};
 
 use crate::patch;
 use super::{ids, WndMain};
@@ -32,16 +32,17 @@ impl WndMain {
 			return Ok(true) // it's not even running
 		}
 
-		let clicked_ok = w::task_dlg::ok_cancel(
-			self.wnd.hwnd(),
-			"VS Code appears to be running",
+		let clicked_btn = self.wnd.hwnd().TaskDialog(
 			None,
-			"It's recommended to close VS Code before patching.\n\
+			Some("VS Code appears to be running"),
+			None,
+			Some("It's recommended to close VS Code before patching.\n\
 				If you run the patch now, you must reload VS Code.\n\n\
-				Patch anyway?",
-			Some("Patch"),
+				Patch anyway?"),
+			co::TDCBF::OK | co::TDCBF::CANCEL,
+			w::IconRes::Warn,
 		)?;
 
-		Ok(clicked_ok)
+		Ok(clicked_btn == co::DLGID::OK)
 	}
 }
