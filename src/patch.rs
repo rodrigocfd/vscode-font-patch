@@ -82,6 +82,7 @@ fn _read_css_contents(css_path: &str) -> w::SysResult<String> {
 
 fn _write_replace_css_contents(css_path: &str, new_contents: &str) -> w::SysResult<()> {
 	let fout = w::File::open(css_path, w::FileAccess::ExistingRW)?;
-	fout.erase_and_write(new_contents.as_bytes())?;
+	fout.set_size(0)?;
+	fout.write(new_contents.as_bytes())?;
 	Ok(())
 }
