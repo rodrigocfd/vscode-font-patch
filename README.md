@@ -27,7 +27,7 @@ To revert the patch, simply run VS Code installer again.
 
 ## Dependencies
 
-This project is written in C++20 and uses [WinDlg](https://github.com/rodrigocfd/windlg) library, assuming it's in a parallel directory.
+This project is written in C++20 and uses [WinDlg](https://github.com/rodrigocfd/windlg) library, whose code is vendored in `windlg` directory.
 
 ## License
 

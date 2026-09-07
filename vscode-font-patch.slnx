@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="vscode-font-patch.vcxproj" Id="e44ede23-7c85-49ad-8eed-e798963f3a77" />
+</Solution>
